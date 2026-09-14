@@ -6,9 +6,16 @@
 <title>TNKR HAUS</title>
 <meta name="description" content="People, Process, Product.">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f9f9f7">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a">
+<meta name="theme-color" content="#f9f9f7" id="theme-color-meta">
 <link rel="canonical" href="https://tnkr.haus/">
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("tnkrhaus-theme");
+      if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    } catch (e) {}
+  })();
+</script>
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TNKR HAUS">
@@ -33,16 +40,27 @@
 
 <style>
   html {
-    color-scheme: light dark;
+    color-scheme: light;
     --bg: #f9f9f7;
     --fg: #111111;
     --muted: #6b6b66;
     --accent: #1d4ed8;
     --oil-opacity: 0.22;
+    --toggle-track: rgba(17, 17, 17, 0.08);
+    --toggle-border: rgba(17, 17, 17, 0.16);
   }
-  @media (prefers-color-scheme: dark) {
-    html { --bg: #0a0a0a; --fg: #fcfcfc; --muted: #8a8a85; --accent: #7fa8ff; --oil-opacity: 0.55; }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0a0a0a;
+    --fg: #fcfcfc;
+    --muted: #8a8a85;
+    --accent: #7fa8ff;
+    --oil-opacity: 0.55;
+    --toggle-track: rgba(255, 255, 255, 0.1);
+    --toggle-border: rgba(255, 255, 255, 0.2);
   }
+  html, body { transition: background-color 0.4s ease; }
+  body, .oil-bg { transition: background-color 0.4s ease, opacity 0.4s ease; }
 
   * { box-sizing: border-box; }
 
@@ -182,10 +200,73 @@
     h1.wordmark.is-animated { color: var(--fg); }
     .oil-bg { animation: none; }
   }
+
+  .theme-toggle {
+    position: fixed;
+    top: 5vh;
+    right: 6vw;
+    z-index: 2;
+    width: 50px;
+    height: 28px;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    background: var(--toggle-track);
+    border: 1px solid var(--toggle-border);
+    border-radius: 999px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: background-color 0.4s ease, border-color 0.4s ease;
+  }
+
+  .theme-toggle .knob {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateX(0);
+    transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1), background-color 0.4s ease;
+  }
+
+  html[data-theme="dark"] .theme-toggle .knob {
+    transform: translateX(22px);
+  }
+
+  .theme-toggle svg {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    stroke: #f9f9f7;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: opacity 0.3s ease, transform 0.4s ease;
+  }
+
+  .theme-toggle .icon-sun { opacity: 1; transform: scale(1) rotate(0deg); }
+  .theme-toggle .icon-moon { opacity: 0; transform: scale(0.4) rotate(-70deg); }
+
+  html[data-theme="dark"] .theme-toggle .icon-sun { opacity: 0; transform: scale(0.4) rotate(70deg); }
+  html[data-theme="dark"] .theme-toggle .icon-moon { opacity: 1; transform: scale(1) rotate(0deg); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle .knob, .theme-toggle svg { transition: none; }
+  }
 </style>
 </head>
 <body>
   <div class="oil-bg" aria-hidden="true"></div>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme" aria-pressed="false">
+    <span class="knob">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"></path></svg>
+    </span>
+  </button>
   <main>
     <div class="wordmark-wrap">
       <h1 class="wordmark"><span class="line">TNKR</span><span class="line">HAUS</span></h1>
@@ -335,6 +416,35 @@
   } else {
     start();
   }
+})();
+
+(function () {
+  var STORAGE_KEY = "tnkrhaus-theme";
+  var root = document.documentElement;
+  var toggle = document.getElementById("themeToggle");
+  var meta = document.getElementById("theme-color-meta");
+
+  function apply(theme) {
+    if (theme === "dark") {
+      root.setAttribute("data-theme", "dark");
+      toggle.setAttribute("aria-pressed", "true");
+      toggle.setAttribute("aria-label", "Switch to light theme");
+      if (meta) meta.setAttribute("content", "#0a0a0a");
+    } else {
+      root.removeAttribute("data-theme");
+      toggle.setAttribute("aria-pressed", "false");
+      toggle.setAttribute("aria-label", "Switch to dark theme");
+      if (meta) meta.setAttribute("content", "#f9f9f7");
+    }
+  }
+
+  apply(root.getAttribute("data-theme") === "dark" ? "dark" : "light");
+
+  toggle.addEventListener("click", function () {
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    apply(next);
+    try { localStorage.setItem(STORAGE_KEY, next); } catch (e) {}
+  });
 })();
 </script>
 </body>
