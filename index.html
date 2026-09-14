@@ -25,11 +25,11 @@
 <meta name="twitter:description" content="People, Process, Product.">
 <meta name="twitter:image" content="https://tnkr.haus/og-image.png">
 
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f9f9f7'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-weight='bold' font-size='58' fill='%231d4ed8' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f9f9f7'/%3E%3Ctext x='50' y='71' font-family='Arial,Helvetica,sans-serif' font-weight='900' font-size='62' fill='%231d4ed8' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
   html {
@@ -56,7 +56,7 @@
     place-items: center;
     min-height: 100svh;
     padding: 8vh 6vw;
-    font-family: "EB Garamond", Georgia, "Times New Roman", serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: var(--fg);
     overscroll-behavior: contain;
   }
@@ -77,10 +77,10 @@
 
   h1.wordmark {
     margin: 0;
-    font-weight: 500;
+    font-weight: 800;
     font-size: clamp(3.4rem, 17vw, 7.4rem);
-    letter-spacing: 0.05em;
-    line-height: 1.02;
+    letter-spacing: -0.02em;
+    line-height: 0.98;
   }
 
   h1.wordmark .line {
@@ -102,25 +102,27 @@
 
   p.tagline {
     margin: 0;
-    font-size: clamp(0.82rem, 1.9vw, 1rem);
-    letter-spacing: 0.32em;
+    font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: clamp(0.72rem, 1.7vw, 0.86rem);
+    letter-spacing: 0.24em;
     text-transform: uppercase;
     color: var(--muted);
   }
 
   p.tagline span.sep {
-    margin: 0 0.55em;
+    margin: 0 0.5em;
     letter-spacing: 0;
-    opacity: 0.6;
+    color: var(--accent);
+    opacity: 0.7;
   }
 
   p.manifesto {
     margin: 0.4rem 0 0;
-    font-style: italic;
-    font-size: clamp(1.1rem, 2.6vw, 1.4rem);
+    font-weight: 400;
+    font-size: clamp(1.05rem, 2.4vw, 1.3rem);
     line-height: 1.55;
     color: var(--fg);
-    opacity: 0.85;
+    opacity: 0.72;
     max-width: 30rem;
   }
 
@@ -131,8 +133,9 @@
     bottom: 6vh;
     display: flex;
     justify-content: center;
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
+    font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
     color: var(--muted);
   }
 
@@ -206,7 +209,7 @@
       var lr = span.getBoundingClientRect();
       var cx = lr.left - rect.left + lr.width / 2;
       var cy = lr.top - rect.top + lr.height / 2;
-      octx.font = "700 " + cs.fontSize + " " + cs.fontFamily;
+      octx.font = "800 " + cs.fontSize + " " + cs.fontFamily;
       octx.fillText(span.textContent, cx, cy + lr.height * 0.02);
     });
 
