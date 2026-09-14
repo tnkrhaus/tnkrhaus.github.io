@@ -38,9 +38,10 @@
     --fg: #111111;
     --muted: #6b6b66;
     --accent: #1d4ed8;
+    --oil-opacity: 0.22;
   }
   @media (prefers-color-scheme: dark) {
-    html { --bg: #0a0a0a; --fg: #fcfcfc; --muted: #8a8a85; --accent: #7fa8ff; }
+    html { --bg: #0a0a0a; --fg: #fcfcfc; --muted: #8a8a85; --accent: #7fa8ff; --oil-opacity: 0.55; }
   }
 
   * { box-sizing: border-box; }
@@ -61,7 +62,32 @@
     overscroll-behavior: contain;
   }
 
+  .oil-bg {
+    position: fixed;
+    inset: -10%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: var(--oil-opacity);
+    background:
+      radial-gradient(ellipse 42% 38% at 18% 24%, #6d5bff, transparent 62%),
+      radial-gradient(ellipse 40% 36% at 82% 18%, #22d3ee, transparent 60%),
+      radial-gradient(ellipse 40% 42% at 78% 78%, #e879f9, transparent 62%),
+      radial-gradient(ellipse 38% 36% at 20% 82%, #2dd4bf, transparent 60%),
+      radial-gradient(ellipse 30% 30% at 50% 50%, #1d4ed8, transparent 65%);
+    filter: blur(70px) saturate(140%);
+    animation: oilDrift 48s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  @keyframes oilDrift {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    50% { transform: translate(-2%, 2.5%) rotate(6deg) scale(1.08); }
+    100% { transform: translate(2.5%, -2%) rotate(-5deg) scale(1.03); }
+  }
+
   main {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -103,8 +129,8 @@
   p.tagline {
     margin: 0;
     font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-    font-size: clamp(0.72rem, 1.7vw, 0.86rem);
-    letter-spacing: 0.24em;
+    font-size: clamp(1rem, 2.6vw, 1.3rem);
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--muted);
   }
@@ -126,11 +152,19 @@
     max-width: 30rem;
   }
 
+  p.manifesto span.hl {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.18em;
+  }
+
   footer {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 6vh;
+    z-index: 1;
     display: flex;
     justify-content: center;
     font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
@@ -146,19 +180,21 @@
   @media (prefers-reduced-motion: reduce) {
     canvas.wordmark-canvas { display: none !important; }
     h1.wordmark.is-animated { color: var(--fg); }
+    .oil-bg { animation: none; }
   }
 </style>
 </head>
 <body>
+  <div class="oil-bg" aria-hidden="true"></div>
   <main>
     <div class="wordmark-wrap">
       <h1 class="wordmark"><span class="line">TNKR</span><span class="line">HAUS</span></h1>
       <canvas class="wordmark-canvas" aria-hidden="true"></canvas>
     </div>
     <p class="tagline">People<span class="sep">&middot;</span>Process<span class="sep">&middot;</span>Product</p>
-    <p class="manifesto">Good products are what&rsquo;s left when people and process are right.</p>
+    <p class="manifesto">Good products are what&rsquo;s left<br>when people and process are <span class="hl">right</span>.</p>
   </main>
-  <footer>Est. 2026</footer>
+  <footer>Built in Singapore with love &middot; Est. 2026</footer>
 
 <script>
 (function () {
