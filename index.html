@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TNKR HAUS</title>
+<meta name="description" content="People, Process, Product.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f9f9f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TNKR HAUS">
+<meta property="og:title" content="TNKR HAUS">
+<meta property="og:description" content="People, Process, Product.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23111'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='58' fill='%23f9f9f7' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+  html {
+    color-scheme: light dark;
+    --bg: #f9f9f7;
+    --fg: #111111;
+    --muted: #6b6b66;
+    --accent: #1d4ed8;
+  }
+  @media (prefers-color-scheme: dark) {
+    html { --bg: #0a0a0a; --fg: #fcfcfc; --muted: #8a8a85; --accent: #7fa8ff; }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+  }
+
+  body {
+    display: grid;
+    place-items: center;
+    min-height: 100svh;
+    padding: 8vh 6vw;
+    font-family: "EB Garamond", Georgia, "Times New Roman", serif;
+    color: var(--fg);
+    overscroll-behavior: contain;
+  }
+
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.3rem, 3vw, 2rem);
+    text-align: center;
+    max-width: 40rem;
+  }
+
+  .wordmark-wrap {
+    position: relative;
+    width: min(92vw, 36rem);
+  }
+
+  h1.wordmark {
+    margin: 0;
+    font-weight: 500;
+    font-size: clamp(3.4rem, 17vw, 7.4rem);
+    letter-spacing: 0.05em;
+    line-height: 1.02;
+  }
+
+  h1.wordmark .line {
+    display: block;
+  }
+
+  h1.wordmark.is-animated {
+    color: transparent;
+    user-select: none;
+  }
+
+  canvas.wordmark-canvas {
+    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  p.tagline {
+    margin: 0;
+    font-size: clamp(0.82rem, 1.9vw, 1rem);
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  p.tagline span.sep {
+    margin: 0 0.55em;
+    letter-spacing: 0;
+    opacity: 0.6;
+  }
+
+  p.manifesto {
+    margin: 0.4rem 0 0;
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.6vw, 1.4rem);
+    line-height: 1.55;
+    color: var(--fg);
+    opacity: 0.85;
+    max-width: 30rem;
+  }
+
+  footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 6vh;
+    display: flex;
+    justify-content: center;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  @media (max-height: 480px) {
+    footer { position: static; margin-top: 3rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    canvas.wordmark-canvas { display: none !important; }
+    h1.wordmark.is-animated { color: var(--fg); }
+  }
+</style>
+</head>
+<body>
+  <main>
+    <div class="wordmark-wrap">
+      <h1 class="wordmark"><span class="line">TNKR</span><span class="line">HAUS</span></h1>
+      <canvas class="wordmark-canvas" aria-hidden="true"></canvas>
+    </div>
+    <p class="tagline">People<span class="sep">&middot;</span>Process<span class="sep">&middot;</span>Product</p>
+    <p class="manifesto">Good products are what&rsquo;s left when people and process are right.</p>
+  </main>
+  <footer>Est. 2026</footer>
+
+<script>
+(function () {
+  var wrap = document.querySelector(".wordmark-wrap");
+  var h1 = wrap.querySelector("h1.wordmark");
+  var lines = Array.prototype.slice.call(wrap.querySelectorAll(".line"));
+  var canvas = wrap.querySelector("canvas.wordmark-canvas");
+
+  if (!canvas.getContext || !window.requestAnimationFrame) return;
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) return;
+
+  var ctx = canvas.getContext("2d");
+  var points = [];
+  var angles = [];
+  var target = { x: 0, y: 0 };
+  var cssW = 0, cssH = 0;
+  var raf = null;
+
+  function accentColor() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#1d4ed8";
+  }
+
+  function buildPoints() {
+    var rect = wrap.getBoundingClientRect();
+    cssW = Math.max(1, Math.round(rect.width));
+    cssH = Math.max(1, Math.round(rect.height));
+
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = cssW * dpr;
+    canvas.height = cssH * dpr;
+    canvas.style.width = cssW + "px";
+    canvas.style.height = cssH + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var off = document.createElement("canvas");
+    off.width = cssW;
+    off.height = cssH;
+    var octx = off.getContext("2d");
+    octx.clearRect(0, 0, cssW, cssH);
+    octx.fillStyle = "#000";
+    octx.textAlign = "center";
+    octx.textBaseline = "middle";
+
+    lines.forEach(function (span) {
+      var cs = getComputedStyle(span);
+      var lr = span.getBoundingClientRect();
+      var cx = lr.left - rect.left + lr.width / 2;
+      var cy = lr.top - rect.top + lr.height / 2;
+      octx.font = "700 " + cs.fontSize + " " + cs.fontFamily;
+      octx.fillText(span.textContent, cx, cy + lr.height * 0.02);
+    });
+
+    var img = octx.getImageData(0, 0, cssW, cssH).data;
+    var step = Math.max(4, Math.round(cssW / 120));
+    var pts = [];
+    for (var y = 0; y < cssH; y += step) {
+      for (var x = 0; x < cssW; x += step) {
+        var idx = (y * cssW + x) * 4 + 3;
+        if (img[idx] > 120) pts.push({ x: x, y: y });
+      }
+    }
+    points = pts;
+    angles = points.map(function () { return -Math.PI / 2; });
+    target = { x: cssW / 2, y: cssH / 2 };
+  }
+
+  function angleLerp(a, b, t) {
+    var diff = b - a;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    return a + diff * t;
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, cssW, cssH);
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = accentColor();
+    var rw = Math.max(1.5, cssW / 220);
+    var rh = rw * 3.4;
+    for (var i = 0; i < points.length; i++) {
+      var p = points[i];
+      var dx = target.x - p.x, dy = target.y - p.y;
+      var targetAngle = Math.atan2(dy, dx) + Math.PI / 2;
+      angles[i] = angleLerp(angles[i], targetAngle, 0.09);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(angles[i]);
+      ctx.fillRect(-rw / 2, -rh / 2, rw, rh);
+      ctx.restore();
+    }
+  }
+
+  function loop() {
+    render();
+    raf = requestAnimationFrame(loop);
+  }
+
+  function toCanvasCoords(clientX, clientY) {
+    var rect = wrap.getBoundingClientRect();
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+
+  function onPointerMove(e) {
+    var p = toCanvasCoords(e.clientX, e.clientY);
+    target.x = p.x;
+    target.y = p.y;
+  }
+
+  function onTouchMove(e) {
+    if (e.touches && e.touches[0]) onPointerMove(e.touches[0]);
+  }
+
+  function onLeave() {
+    target = { x: cssW / 2, y: cssH / 2 };
+  }
+
+  var resizeTimer;
+  function onResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(buildPoints, 150);
+  }
+
+  function start() {
+    buildPoints();
+    canvas.style.display = "block";
+    h1.classList.add("is-animated");
+    window.addEventListener("mousemove", onPointerMove, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("mouseleave", onLeave, { passive: true });
+    window.addEventListener("resize", onResize);
+    if (!raf) loop();
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(start).catch(start);
+  } else {
+    start();
+  }
+})();
+</script>
+</body>
+</html>
