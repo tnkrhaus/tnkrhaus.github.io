@@ -139,9 +139,8 @@
   canvas.wordmark-canvas {
     display: none;
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: -32px;
+    left: -32px;
   }
 
   p.tagline {
@@ -292,6 +291,16 @@
   var ctx = canvas.getContext("2d");
   var points = [];
   var angles = [];
+  var t0 = performance.now();
+  // Breathing: the whole logo slowly inhales (expands) and exhales (shrinks)
+  // together, one cycle every ~8s.
+  var BREATH_PERIOD = 8000;
+  var EXPAND = 0.02;       // how far dashes drift outward, as a fraction of their distance from centre
+  // Shimmer: a soft diagonal band of light sweeps left to right, then rests.
+  var SHIMMER_PERIOD = 16000; // ms per sweep, including the rest
+  var SHIMMER_SWEEP = 0.65;  // fraction of the period spent crossing the logo
+  var SHIMMER_WIDTH = 0.12;  // band softness, as a fraction of the logo width
+  var PAD = 32;            // canvas bleed so the expanded edges aren't clipped (matches CSS)
   var target = { x: 0, y: 0 };
   var cssW = 0, cssH = 0;
   var raf = null;
@@ -306,11 +315,11 @@
     cssH = Math.max(1, Math.round(rect.height));
 
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = cssW * dpr;
-    canvas.height = cssH * dpr;
-    canvas.style.width = cssW + "px";
-    canvas.style.height = cssH + "px";
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvas.width = (cssW + PAD * 2) * dpr;
+    canvas.height = (cssH + PAD * 2) * dpr;
+    canvas.style.width = cssW + PAD * 2 + "px";
+    canvas.style.height = cssH + PAD * 2 + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, PAD * dpr, PAD * dpr);
 
     var off = document.createElement("canvas");
     off.width = cssW;
@@ -352,20 +361,44 @@
   }
 
   function render() {
-    ctx.clearRect(0, 0, cssW, cssH);
-    ctx.globalAlpha = 0.9;
-    ctx.fillStyle = accentColor();
+    ctx.clearRect(-PAD, -PAD, cssW + PAD * 2, cssH + PAD * 2);
+    var cx = cssW / 2, cy = cssH / 2;
+    var accent = accentColor();
     var rw = Math.max(1.5, cssW / 220);
     var rh = rw * 3.4;
+    var clock = ((performance.now() - t0) / BREATH_PERIOD) * Math.PI * 2;
+    // Eased sine (0..1) so the logo lingers at full inhale and full exhale.
+    var b = 0.5 + 0.5 * Math.sin(clock);
+    b = b * b * (3 - 2 * b);
+    var scale = 0.8 + 0.2 * b;
+    var push = (b - 0.5) * 2 * EXPAND;
+    var baseAlpha = 0.5 + 0.45 * b;
+    // Band centre travels along x + 0.5y, from fully off the left edge to fully off the right.
+    var span = cssW + cssH * 0.5;
+    var bandW = cssW * SHIMMER_WIDTH;
+    var sweep = ((performance.now() - t0) % SHIMMER_PERIOD) / SHIMMER_PERIOD / SHIMMER_SWEEP;
+    var band = sweep <= 1 ? -bandW * 3 + sweep * (span + bandW * 6) : Infinity;
     for (var i = 0; i < points.length; i++) {
       var p = points[i];
-      var dx = target.x - p.x, dy = target.y - p.y;
+      var px = p.x + (p.x - cx) * push;
+      var py = p.y + (p.y - cy) * push;
+      var dx = target.x - px, dy = target.y - py;
       var targetAngle = Math.atan2(dy, dx) + Math.PI / 2;
       angles[i] = angleLerp(angles[i], targetAngle, 0.09);
+      var d = (p.x + p.y * 0.5 - band) / bandW;
+      var g = Math.exp(-d * d);
+      var s = scale * (1 + 0.12 * g);
       ctx.save();
-      ctx.translate(p.x, p.y);
+      ctx.translate(px, py);
       ctx.rotate(angles[i]);
-      ctx.fillRect(-rw / 2, -rh / 2, rw, rh);
+      ctx.fillStyle = accent;
+      ctx.globalAlpha = baseAlpha + (1 - baseAlpha) * g;
+      ctx.fillRect(-rw * s / 2, -rh * s / 2, rw * s, rh * s);
+      if (g > 0.02) {
+        ctx.fillStyle = "#ffffff";
+        ctx.globalAlpha = 0.6 * g;
+        ctx.fillRect(-rw * s / 2, -rh * s / 2, rw * s, rh * s);
+      }
       ctx.restore();
     }
   }
